@@ -1,0 +1,116 @@
+<html>
+	<head>
+		<script src="jquery/jquery-3.1.1.js"></script>
+		<script>
+			
+			// guarda a info XML
+			var geoXML;
+			
+			$.ajax({
+				url : "geo.xml",
+				async : false,
+				type : "GET",
+				datatype : "xml",
+				success : function (dataXML) {
+					geoXML = dataXML;
+				}
+			});
+			//alert(geoXML);
+			$(document).ready(function () {
+				
+				// registar evento de reset
+				$("#hf").bind("reset", initSelectAll);
+				$("#hf").submit(function (event) {
+					selectedC = $("#isel_country").find(":selected").attr("value");
+					//alert(selectedC);
+					
+					if (selectedC) {
+						$("#hf").submit();
+					} 
+					event.preventDefault();
+				})
+				// inicializar os selects
+				initSelectAll();
+				
+				//$("select").change(function () {alert("ola")});
+				$("#isel_continent").change(loadRegions);
+				$("#isel_region").change(loadCountries);
+				
+				loadContinents();
+
+				
+				//regions = findRegions("1");
+				//loadSelect("#isel_region",regions);
+				
+				//countries = findCountries("1_2");
+				//countries = findX("region","country","1_2");
+				//loadSelect("#isel_country",countries);
+				//debugger;
+			});
+			
+			function loadContinents() {
+				initSelect("#isel_region");
+				initSelect("#isel_country");
+				continents = $(geoXML).find("geo>continent");	
+				loadSelect("#isel_continent",continents);
+			}
+			
+			function loadRegions() {
+				initSelect("#isel_country");
+				id_selected = $("#isel_continent").children(":selected").attr("value");
+				filterS = "[id='"+id_selected+"']";
+				regions = $(geoXML).find("geo>continent").filter(filterS).children("region");	
+				loadSelect("#isel_region",regions);
+			}
+			
+			function loadCountries() {
+				id_selected = $("#isel_region").children(":selected").attr("value");
+				filterS = "[id='"+id_selected+"']"
+				countries = $(geoXML).find("region").filter(filterS).children("country");	
+				loadSelect("#isel_country",countries);
+			}
+
+
+			function loadSelect(id,XMLDataCol) {
+				$(id).empty();
+				$(id).append($("<option/>").attr("disabled","disabled").attr("selected","selected").text("Select..."));
+				$(XMLDataCol).each(function (idx,node) {
+					info_id = $(node).attr("id");
+					info_name = $(node).children("name").text();
+					$(id).append($("<option/>").text(info_name).attr("value",info_id));
+				})
+			}
+			
+			function initSelect(id) {
+				$(id).empty();
+				$(id).append($("<option/>").text("Waiting ...").attr("disabled","disabled"));
+			}
+			
+			function initSelectAll() {
+				initSelect("#isel_continent");
+				initSelect("#isel_region");
+				initSelect("#isel_country");
+			}
+			
+		</script>
+		
+	</head>
+	<body>
+		<form id="hf" method="get" action="dump.php">
+			<select id="isel_continent" name="continent">
+				
+			</select>
+			<br/>
+			<select id="isel_region" name="region">
+				
+			</select>
+			<br/>
+			<select id="isel_country" name="country">
+				
+			</select>
+			<br/>
+			<input type="submit"/>
+			<input type="reset"/>
+		</form>
+	</body>
+</html>
